@@ -17,10 +17,9 @@ public class ServiceView : MonoBehaviour
 
     private Module selectedModule;
     private Service service;
-    private void Start()
-    {
-        //gameObject.SetActive(false);
-    }
+    // TODO: fix
+    // Incorrect data for secondary modules after upgrade.
+
     public void Display(Service service)
     {
         this.service = service;

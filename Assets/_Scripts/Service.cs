@@ -50,6 +50,8 @@ public class Service : MonoBehaviour
     public Module[] GetModules() => modules;
     public async void ServeCustomer(Customer customer)
     {
+        if (customer == null) return;
+
         var spot = FreeCustomerSpots.First(_ => _.Free == true);
         spot.Free = false;
 

@@ -49,7 +49,7 @@ public static class Bootstrapper
         }
         asyncOperation.allowSceneActivation = true;
     }
-#if !UNITY_EDITOR
+#if UNITY_EDITOR // Disable if constant loading is annoying.
     [InitializeOnLoadAttribute]
     public static class DefaultSceneLoader
     {

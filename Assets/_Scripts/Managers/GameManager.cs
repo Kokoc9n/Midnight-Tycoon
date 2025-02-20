@@ -4,6 +4,13 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// I miss DOTween so much. :(
+/// Not happy with the results overall.
+/// Did not complete all the tasks like settings UI.  ¯\_(ツ)_/¯
+/// Thanks for reading my code!
+/// </summary>
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;

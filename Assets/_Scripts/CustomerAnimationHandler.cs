@@ -16,6 +16,7 @@ public class CustomerAnimationHandler : MonoBehaviour
 
     private void OnStateChangeHandle(Customer.CustomerState state)
     {
+        if (animator == null) return;
         switch (state)
         {
             case Customer.CustomerState.Searching:

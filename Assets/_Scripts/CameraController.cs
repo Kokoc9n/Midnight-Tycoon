@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 public class CameraController : MonoBehaviour
 {
     private const float ZOOM_LERP_SPEED = 0.1f;
-    private float dragSpeed = 0.1f;
+    private float dragSpeed = 0.05f;
     private float zoomSpeed = 10;
     private float minZoom = 6f;
     private float maxZoom = 14f;
