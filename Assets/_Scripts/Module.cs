@@ -10,17 +10,15 @@ public class Module : MonoBehaviour
     public float Bonus { get; private set; }
     public void Init(int level)
     {
-        while(CurrentLevel != level)
-        {
-            Upgrade();
-        }
-    }
-    private void Start()
-    {
         foreach (Transform child in transform)
             child.gameObject.SetActive(false);
-        if(initialObject != null)
+        if (initialObject != null)
             initialObject.SetActive(true);
+
+        while (CurrentLevel != level)
+        {
+            Upgrade(true);
+        }
     }
     public void ApplyData(ModuleUpgradeData moduleUpgrade)
     {
@@ -32,15 +30,18 @@ public class Module : MonoBehaviour
         moduleUpgrade.SwapData.New.SetActive(true);
         NextLevelUpgradeCost = moduleUpgrade.UpgradeCost;
     }
-    public void Upgrade()
+    public void Upgrade(bool free = false)
     {
         if (CurrentLevel + 1 > upgradeData.Length)
         {
             Debug.LogWarning($"{gameObject.name} Exceded maximum level on upgrade");
             return;
         }
-        if (Player.Money < NextLevelUpgradeCost) return;
-        Player.Money -= NextLevelUpgradeCost;
+        if (!free)
+        {
+            if (Player.Money < NextLevelUpgradeCost) return;
+            Player.Money -= NextLevelUpgradeCost;
+        }
         ApplyData(upgradeData[CurrentLevel++]);
     }
 }

@@ -71,7 +71,6 @@ public class GameUIPage : Page
     }
     private async void OnProfitHandle(int money, Vector3? pos)
     {
-        Debug.Log(pos + " pos");
         var moneyImage = moneyImagePool.Get();
         if (pos != null) /////
             moneyImage.transform.position = Camera.main.WorldToScreenPoint((Vector3)pos);

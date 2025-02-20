@@ -41,17 +41,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         Load();
-        // Debug.
-
-        //CustomerFactory.Instance.CreateCustomer();
-        //await Task.Delay(2000);
-        //CustomerFactory.Instance.CreateCustomer();
-        //await Task.Delay(2000);
-        //CustomerFactory.Instance.CreateCustomer();
-        //await Task.Delay(2000);
-        //CustomerFactory.Instance.CreateCustomer();
-        //await Task.Delay(2000);
-        //CustomerFactory.Instance.CreateCustomer();
     }
     public Vector3 GetEntrancePosition() => entrance.position;
     public Vector3 GetStartingPosition() => customerStartingPoint.position;
