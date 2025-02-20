@@ -2,15 +2,18 @@ using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using System.Linq;
-using System.Collections;
+using Raycaster;
 
 public class Service : MonoBehaviour
 {
+    private const float SERVE_SPEED = 10;
     [SerializeField] int maxCustomerSpots;
     [SerializeField] Module[] modules;
     [SerializeField] ServiceSpot[] freeCustomerSpots;
-    private int price;
-    private bool active;
+    [SerializeField] ServiceView serviceView;
+    private RaycastReceiver raycastReceiver;
+    public int Price { get; private set; }
+    private bool active = true;
     [System.Serializable]
     public class ServiceSpot
     {
@@ -22,39 +25,53 @@ public class Service : MonoBehaviour
     public EventHandler OnServeInit;
     public ServiceSpot[] FreeCustomerSpots { get => freeCustomerSpots; set => freeCustomerSpots = value; }
     public bool Available { get; private set; }
+    private void Awake()
+    {
+        raycastReceiver = new(transform);
+        raycastReceiver.OnHitFirstClick += OnHitFirstClickHandle;
+    }
+    public void Init(ServiceData data)
+    {
+        Price = data.Price;
+        for (int i = 0; i < modules.Length; i++)
+        {
+            modules[i].Init(data.ModulesData[i].Level);
+        }
+    }
     private void Start()
     {
-        // Debug
-        Toggle();
         Available = true;
-        price = CalculatePrice(modules) + 1;
+        Price = CalculatePrice(modules) + 1;
     }
     public void Toggle() =>
         active = !active;
     public Vector3 GetSpotPosition(int index) =>
         FreeCustomerSpots[index].Transform.position;
+    public Module[] GetModules() => modules;
     public async void ServeCustomer(Customer customer)
     {
         var spot = FreeCustomerSpots.First(_ => _.Free == true);
         spot.Free = false;
-        Debug.Log(spot.Transform.name + " occupied " + spot.Free);
+
         if (FreeCustomerSpots.All(_ => _.Free == false)) Available = false;
 
+        customer.transform.LookAt(spot.Transform.position, transform.up);
         await customer.transform.MoveToSpeedBasedAsync(spot.Transform.position, 1f);
+        customer.transform.rotation = spot.Transform.rotation;
+        customer.OnSpotReachedHandle();
 
-        OnServeInit?.Invoke(5, spot.Transform.position);
-        await Task.Delay(5000);
-        var profit = customer.Money + price;
+        OnServeInit?.Invoke(SERVE_SPEED, spot.Transform.position);
+        await Task.Delay((int)SERVE_SPEED * 1000);
+        var profit = customer.Money + Price;
         OnServedCustomer?.Invoke(profit, transform.position);
         spot.Free = Available = true;
         customer.OnServedHandle();
     }
-    public void Save()
+    private void OnHitFirstClickHandle(Vector3 vector)
     {
-
-    }
-    public void Load()
-    {
+        CanvasManager.StackPage(typeof(ServicePage));
+        serviceView.Display(this);
+        // Zoom in
 
     }
     private int CalculatePrice(Module[] modules)

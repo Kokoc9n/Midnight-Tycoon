@@ -1,29 +1,26 @@
-﻿using Raycaster;
-using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 
-public partial class Module : MonoBehaviour
+public class Module : MonoBehaviour
 {
     [SerializeField] ModuleUpgradeData[] upgradeData;
     [SerializeField] GameObject initialObject;
-    private RaycastReceiver raycastReceiver;
-    private int currentLevel;
+
+    public int CurrentLevel { get; private set; }
+    public int NextLevelUpgradeCost { get; private set; }
     public float Bonus { get; private set; }
-    private void Awake()
+    public void Init(int level)
     {
-        raycastReceiver = new(transform);
-        raycastReceiver.OnHitFirstClick += OnHitFirstClickHandle;
+        while(CurrentLevel != level)
+        {
+            Upgrade();
+        }
     }
     private void Start()
     {
         foreach (Transform child in transform)
             child.gameObject.SetActive(false);
-        initialObject.SetActive(true);
-        // Debug loading level
-        //for (int i = 0; i < 2; i++)
-        //{
-        //    Upgrade();
-        //}
+        if(initialObject != null)
+            initialObject.SetActive(true);
     }
     public void ApplyData(ModuleUpgradeData moduleUpgrade)
     {
@@ -33,20 +30,18 @@ public partial class Module : MonoBehaviour
         if (moduleUpgrade.SwapData.New == null) return;
         moduleUpgrade.SwapData.Old.SetActive(false);
         moduleUpgrade.SwapData.New.SetActive(true);
-    }
-    private void OnHitFirstClickHandle(Vector3 vector)
-    {
-        // Open UI
-        Upgrade();
+        NextLevelUpgradeCost = moduleUpgrade.UpgradeCost;
     }
     public void Upgrade()
     {
-        if (currentLevel + 1 > upgradeData.Length)
+        if (CurrentLevel + 1 > upgradeData.Length)
         {
             Debug.LogWarning($"{gameObject.name} Exceded maximum level on upgrade");
             return;
         }
-        ApplyData(upgradeData[currentLevel++]);
+        if (Player.Money < NextLevelUpgradeCost) return;
+        Player.Money -= NextLevelUpgradeCost;
+        ApplyData(upgradeData[CurrentLevel++]);
     }
 }
 

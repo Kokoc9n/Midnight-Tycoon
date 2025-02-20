@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraController : MonoBehaviour
 {
@@ -15,6 +17,17 @@ public class CameraController : MonoBehaviour
     private Camera cam;
     private Transform t;
     private float targetZoom;
+
+    private static PointerEventData _eventDataCurrentPosition;
+    private static List<RaycastResult> _results;
+    private bool IsOverUi()
+    {
+        _eventDataCurrentPosition = new PointerEventData(EventSystem.current) { position = Input.mousePosition };
+        _results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(_eventDataCurrentPosition, _results);
+        return _results.Count > 0;
+    }
+
     private void Awake()
     {
         cam = Camera.main;
@@ -34,6 +47,7 @@ public class CameraController : MonoBehaviour
 
     private void HandleCameraMovement()
     {
+        if (IsOverUi()) return;
         if (Input.GetMouseButtonDown(0))
         {
             lastMousePosition = Input.mousePosition;

@@ -11,7 +11,7 @@ public class GameUIPage : Page
     [SerializeField] TMP_Text moneyCounter;
     [SerializeField] TMP_Text clockText;
 
-    private ObjectPool<Image> timerImagePool;
+    private ObjectPool<WorldTimerView> timerImagePool;
     private ObjectPool<Image> moneyImagePool;
     private int initialSize = 2;
     private int maxSize = 50;
@@ -19,19 +19,19 @@ public class GameUIPage : Page
 
     private void OnDisable()
     {
-        Tavern.Instance.OnProfit -= OnProfitHandle;
+        GameManager.Instance.OnProfit -= OnProfitHandle;
         TimeManager.Instance.OnGameTimeChanged -= OnGameTimeChangedHandle;
     }
     private void OnEnable()
     {
-        Tavern.Instance.OnProfit += OnProfitHandle;
+        GameManager.Instance.OnProfit += OnProfitHandle;
         TimeManager.Instance.OnGameTimeChanged += OnGameTimeChangedHandle;
         //OnProfitHandle(Player.Money, null);
         moneyCounter.text = $"{Player.Money}";
     }
     private void Awake()
     {
-        var services = Tavern.Instance.GetServices();
+        var services = GameManager.Instance.GetServices();
         for (int i = 0; i < services.Length; i++)
         {
             services[i].OnServeInit += OnServeInitHandle;
@@ -39,7 +39,7 @@ public class GameUIPage : Page
     }
     private void Start()
     {
-        timerImagePool = new ObjectPool<Image>(
+        timerImagePool = new ObjectPool<WorldTimerView>(
           () => CreateTimerImage(),
           t => t.gameObject.SetActive(true),
           t => t.gameObject.SetActive(false),
@@ -56,11 +56,11 @@ public class GameUIPage : Page
           maxSize: maxSize
         );
     }
-    private Image CreateTimerImage()
+    private WorldTimerView CreateTimerImage()
     {
         var obj = GameObject.Instantiate(Resources.Load("Prefabs/WorldTimer"), 
             CanvasManager.Instance.transform.parent) as GameObject; // Ew!
-        return obj.GetComponentInChildren<Image>();
+        return obj.transform.GetComponent<WorldTimerView>();
     }
     private Image CreateMoneyImage()
     {
@@ -89,7 +89,7 @@ public class GameUIPage : Page
     private async Task OnServeInitHandle(float time, Vector3 pos)
     {
         var timerImage = timerImagePool.Get();
-        timerImage.transform.parent.position = pos + new Vector3(0, 5);
+        timerImage.transform.position = pos + new Vector3(0, 5);
         await Timer(time);
         timerImagePool.Release(timerImage);
         await Task.CompletedTask;
@@ -101,10 +101,10 @@ public class GameUIPage : Page
             {
                 elapsedTime = Time.time - startTime;
                 float percent = Mathf.Clamp01(elapsedTime / time);
-                timerImage.fillAmount = percent;
+                timerImage.SetImageFillAmout(percent);
                 await Task.Yield();
             }
-            timerImage.fillAmount = 1f;
+            timerImage.SetImageFillAmout(1);
         }
     }
     private void OnGameTimeChangedHandle(float gameTime)

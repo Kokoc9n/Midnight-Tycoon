@@ -25,7 +25,13 @@ public class CustomerAnimationHandler : MonoBehaviour
                 animator.Play("Interact");
                 break;
             case Customer.CustomerState.Served:
+                animator.Play("Sit_Chair_StandUp");
+                break;
+            case Customer.CustomerState.WalkingToSpot:
                 animator.Play("Walking");
+                break;
+            case Customer.CustomerState.Waiting:
+                animator.Play("Idle");
                 break;
         }
     }

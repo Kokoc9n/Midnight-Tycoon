@@ -19,7 +19,8 @@ public class Customer : MonoBehaviour
         Searching = 0,
         EnjoyingLife = 1,
         Served = 2,
-        Waiting = 3
+        Waiting = 3,
+        WalkingToSpot = 4,
     }
     private void OnApplicationQuit()
     {
@@ -27,14 +28,25 @@ public class Customer : MonoBehaviour
     }
     private void Start()
     {
-        transform.position = Tavern.Instance.GetStartingPosition();
+        transform.position = GameManager.Instance.GetStartingPosition();
         HandleSearchingState();
+    }
+    public void OnSpotReachedHandle()
+    {
+        currentState = CustomerState.EnjoyingLife;
+        OnStateChange?.Invoke(currentState);
     }
     public async void OnServedHandle()
     {
-        var ePosition = Tavern.Instance.GetEntrancePosition();
+        var ePosition = GameManager.Instance.GetEntrancePosition();
+        var sPosition = GameManager.Instance.GetStartingPosition();
+        currentState = CustomerState.Served;
+        OnStateChange?.Invoke(currentState);
+        await Task.Delay(200); // Hardcoded delay, EW!
+        transform.LookAt(ePosition, transform.up);
         await transform.MoveToSpeedBasedAsync(ePosition, MOVE_SPEED);
-        await transform.MoveToSpeedBasedAsync(Tavern.Instance.GetStartingPosition(), MOVE_SPEED);
+        transform.LookAt(sPosition, transform.up);
+        await transform.MoveToSpeedBasedAsync(sPosition, MOVE_SPEED);
         Destroy(gameObject);
     }
     private async void HandleSearchingState()
@@ -43,10 +55,10 @@ public class Customer : MonoBehaviour
         currentState = CustomerState.Searching;
         OnStateChange?.Invoke(currentState);
 
-        var ePosition = Tavern.Instance.GetEntrancePosition();
+        var ePosition = GameManager.Instance.GetEntrancePosition();
         transform.LookAt(ePosition, transform.up);
         await transform.MoveToSpeedBasedAsync(ePosition, MOVE_SPEED);
-        await WaitForService(Tavern.Instance.GetService());
+        await WaitForService(GameManager.Instance.GetService());
 
         async Task WaitForService(Service service)
         {
@@ -58,13 +70,14 @@ public class Customer : MonoBehaviour
                 if (service.Available == true)
                 {
                     Debug.Log("found a spot");
-                    currentState = CustomerState.EnjoyingLife;
+                    currentState = CustomerState.WalkingToSpot;
                     OnStateChange?.Invoke(currentState);
                     service.ServeCustomer(this);
                     // OnStateChange
                     return;
                 }
             }
+            if (tokenSource.IsCancellationRequested) return;
             // OnPatienceRunOut
             currentState = CustomerState.Served;
             OnStateChange?.Invoke(currentState);

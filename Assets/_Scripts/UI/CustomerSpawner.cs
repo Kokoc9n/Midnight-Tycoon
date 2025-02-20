@@ -1,17 +1,23 @@
-using System.Collections;
 using UnityEngine;
 
-public class PrefabSpawner : MonoBehaviour
+public class CustomerSpawner : MonoBehaviour
 {
+    private const float SPAWN_INTERVAL = 20;
     [SerializeField] GameObject[] prefabs;
     [SerializeField] float[] spawnTimes;
-
-    public float gameTime; //////
-
+    private float timer;
     void Start()
     {
-        gameTime = Random.Range(0f, 24f);
         SpawnPrefabBasedOnTime();
+    }
+    private void Update()
+    {
+        timer += Time.deltaTime;
+        if (timer >= SPAWN_INTERVAL)
+        {
+            SpawnPrefabBasedOnTime();
+            timer -= SPAWN_INTERVAL;
+        }
     }
 
     void SpawnPrefabBasedOnTime()
@@ -19,16 +25,15 @@ public class PrefabSpawner : MonoBehaviour
         float[] weights = new float[prefabs.Length];
         for (int i = 0; i < prefabs.Length; i++)
         {
-            float diff = Mathf.Abs(gameTime - spawnTimes[i]);
+            float diff = Mathf.Abs(TimeManager.Instance.GameTime - spawnTimes[i]);
             if (diff > 12f)
             {
-                diff = 24f - diff; // Adjust for circular time (wrap-around at 0/24)
+                diff = 24f - diff;
             }
 
-            weights[i] = 1f / (1f + diff); // Inversely proportional to the time difference
+            weights[i] = 1f / (1f + diff);
         }
 
-        // Normalize the weights so they sum up to 1
         float totalWeight = 0f;
         foreach (float weight in weights)
         {
@@ -40,7 +45,6 @@ public class PrefabSpawner : MonoBehaviour
             weights[i] /= totalWeight;
         }
 
-        // Randomly select prefab based on the weighted probabilities
         float randomValue = Random.Range(0f, 1f);
         float cumulativeWeight = 0f;
 
@@ -49,7 +53,7 @@ public class PrefabSpawner : MonoBehaviour
             cumulativeWeight += weights[i];
             if (randomValue <= cumulativeWeight)
             {
-                Instantiate(prefabs[i], transform.position, Quaternion.identity); // Spawn the prefab
+                Instantiate(prefabs[i]);
                 break;
             }
         }
